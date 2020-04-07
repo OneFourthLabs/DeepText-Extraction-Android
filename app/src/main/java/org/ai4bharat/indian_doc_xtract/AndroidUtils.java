@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class Utils {
+public class AndroidUtils {
 
     public static String assetFilePath(Context context, String assetName) {
         File file = new File(context.getFilesDir(), assetName);

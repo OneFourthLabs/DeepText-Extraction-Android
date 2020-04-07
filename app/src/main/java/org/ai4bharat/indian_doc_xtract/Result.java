@@ -15,6 +15,8 @@ import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import utils.ImageUtils;
+
 public class Result extends AppCompatActivity {
 
     @Override
@@ -33,7 +35,7 @@ public class Result extends AppCompatActivity {
             }
         });
 
-        Bitmap imageBitmap = (Bitmap) getIntent().getBundleExtra("imagedata").get("data");
+        Bitmap imageBitmap = ImageUtils.readBitmapFromAppDirectory(getIntent().getStringExtra("result_path"), getApplicationContext());
 
         String pred = getIntent().getStringExtra("pred");
 
