@@ -12,6 +12,7 @@ import org.opencv.imgproc.Imgproc;
 public abstract class TextDetectorCV {
 
     String modelPath;
+    final int Y_THRESH_MAX = 10;
 
     public TextDetectorCV() {
     }
@@ -63,8 +64,8 @@ public abstract class TextDetectorCV {
         for (int i = 0; i < vertices.length-1; ++i) {
             int min_j = i;
             for (int j = i+1; j < vertices.length; ++j) {
-                if((vertices[j][1].y < vertices[min_j][1].y && Math.abs(vertices[j][1].y - vertices[min_j][1].y) > 10)
-                        || (Math.abs(vertices[j][1].y - vertices[min_j][1].y) <= 10 && vertices[j][1].x < vertices[min_j][1].x)) {
+                if((vertices[j][1].y < vertices[min_j][1].y && Math.abs(vertices[j][1].y - vertices[min_j][1].y) > Y_THRESH_MAX)
+                        || (Math.abs(vertices[j][1].y - vertices[min_j][1].y) <= Y_THRESH_MAX && vertices[j][1].x < vertices[min_j][1].x)) {
                     min_j = j;
                 }
             }
@@ -76,14 +77,27 @@ public abstract class TextDetectorCV {
         }
     }
 
-    public List<Mat> getFixedCropImages(Point[][] rectVertices, Mat frame, int w, int h) {
+    public List<ArrayList<Mat>> getFixedCropImages(Point[][] rectVertices, Mat frame, int w, int h) {
+
+        List<ArrayList<Mat>> crops = new ArrayList<ArrayList<Mat>> ();
+        if (rectVertices == null)
+            return crops;
+
         // vertex[0] contains bottom-left point, vertex[1] top-left point, ... (clockwise)
         sortRectanglesFromPoints(rectVertices);
-        List<Mat> crops = new ArrayList<Mat> ();
+        double last_x = 0, last_y = 0;
+        ArrayList<Mat> currentRow = new ArrayList<Mat> ();
         for (int i = 0; i < rectVertices.length; ++i) {
             Mat crop = cropSlantRect(rectVertices[i], frame, w, h);
-            crops.add(crop);
+            if (rectVertices[i][1].x < last_x && Math.abs(rectVertices[i][1].y - last_y) >= Y_THRESH_MAX) {
+                crops.add(currentRow);
+                currentRow = new ArrayList<Mat> ();
+            }
+            currentRow.add(crop);
+            last_x = rectVertices[i][1].x;
+            last_y = rectVertices[i][1].y;
         }
+        crops.add(currentRow);
         return crops;
     }
 

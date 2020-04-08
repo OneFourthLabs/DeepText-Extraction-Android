@@ -1,4 +1,4 @@
-package org.ai4bharat.indian_doc_xtract;
+package utils;
 
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;

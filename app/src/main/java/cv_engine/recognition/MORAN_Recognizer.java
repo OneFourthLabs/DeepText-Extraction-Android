@@ -1,23 +1,26 @@
-package org.ai4bharat.indian_doc_xtract;
+package cv_engine.recognition;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
-import android.util.Log;
+import android.util.Size;
 
+import utils.TensorImageCustomUtils;
 import org.pytorch.IValue;
 import org.pytorch.Module;
 import org.pytorch.Tensor;
 
 public class MORAN_Recognizer {
 
-    Module model;
+    final Module model;
+    public static final Size inputSize = new Size(100, 32);
+
     float mean = 0.5f;
     float std = 0.5f;
-    String alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$";
-    char[] output_map = alphabet.toCharArray();
+    static final String alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$";
+    static final char[] output_map = alphabet.toCharArray();
 
     public MORAN_Recognizer(String modelPath){
 
@@ -26,7 +29,6 @@ public class MORAN_Recognizer {
     }
 
     public void setMeanAndStd(float mean, float std){
-
         this.mean = mean;
         this.std = std;
     }
@@ -50,7 +52,7 @@ public class MORAN_Recognizer {
 
     public Tensor preprocess(Bitmap bitmap){
 
-        bitmap = Bitmap.createScaledBitmap(bitmap,100,32,false);
+        bitmap = Bitmap.createScaledBitmap(bitmap, inputSize.getWidth(), inputSize.getHeight(),false);
         bitmap = toGrayscale(bitmap);
         return TensorImageCustomUtils.bitmapGrayscaleToFloat32Tensor(bitmap, this.mean, this.std);
 

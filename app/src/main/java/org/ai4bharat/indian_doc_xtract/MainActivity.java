@@ -8,6 +8,7 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.os.Trace;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,7 +23,10 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
+import cv_engine.TextExtractor;
 import cv_engine.detection.EastTextDetector;
 import utils.ImageUtils;
 import utils.ImgCaptureHandler;
@@ -42,10 +46,16 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String  TAG              = "MainActivity";
 
-    //    MORAN_Recognizer classifier;
-    EastTextDetector detector;
+    TextExtractor textExtractor;
     ImgCaptureHandler imgCaptureHandler;
     boolean isOpenCvInitialized;
+
+    boolean loadModels() {
+        textExtractor = new TextExtractor(DETECTION_INPUT_SIZE,
+                AndroidUtils.assetFilePath(MainActivity.this,"frozen_east_text_detection.pb"),
+                AndroidUtils.assetFilePath(MainActivity.this,"moran.pt"));
+        return true;
+    }
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -53,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS:
                 {
-                    detector = new EastTextDetector(AndroidUtils.assetFilePath(MainActivity.this,"frozen_east_text_detection.pb"), DETECTION_INPUT_SIZE.getWidth(), DETECTION_INPUT_SIZE.getHeight());
+                    loadModels();
                 } break;
                 default:
                 {
@@ -72,8 +82,6 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         imgCaptureHandler = new ImgCaptureHandler(true, getApplicationContext());
 
-//        classifier = new MORAN_Recognizer(Utils.assetFilePath(this,"moran.pt"));
-
         Button capture = findViewById(R.id.capture);
 
         capture.setOnClickListener(new View.OnClickListener(){
@@ -87,11 +95,6 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "ERROR: Unable to start camera", Toast.LENGTH_SHORT).show();
                     Log.d(TAG, e.getMessage());
                 }
-
-
-
-//                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//                startActivityForResult(cameraIntent,cameraRequestCode);
             }
         });
 
@@ -106,8 +109,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
         // TODO: Loads each time??
         if (isOpenCvInitialized)
@@ -144,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if(requestCode == ImgCaptureHandler.REQUEST_TAKE_PHOTO && resultCode == RESULT_OK){
             Log.d(TAG, "Getting image...");
@@ -152,24 +154,21 @@ public class MainActivity extends AppCompatActivity {
             Intent resultView = new Intent(this, Result.class);
 
             Bitmap imageBitmap = imgCaptureHandler.getPic();
-            imageBitmap = ImageUtils.letterboxResizeBitmap(imageBitmap, (int) detector.input_size.width, (int) detector.input_size.height);
+            String saveDetectionTo = "result.jpg";
 
-            // Convert Bitmap ARGB to RGB Mat: https://stackoverflow.com/a/60724380
-            Mat inputImg = new Mat();
-            Utils.bitmapToMat(imageBitmap, inputImg);
-            Imgproc.cvtColor(inputImg, inputImg, Imgproc.COLOR_RGBA2RGB);
+            Log.d(TAG, "Processing image...");
+            List<ArrayList<String>> outputs = textExtractor.extractText(imageBitmap, saveDetectionTo, getApplicationContext());
 
-            Log.d(TAG, "Predicting image...");
-//            String pred = classifier.predict(imageBitmap);
-            detector.detect(inputImg);
-            Utils.matToBitmap(inputImg, imageBitmap);
-            Log.d(TAG, "Saving image...");
-            ImageUtils.saveBitmapToAppDirectoryAsJPG(imageBitmap, "result.jpg", getApplicationContext());
+            StringBuilder finalOutput = new StringBuilder("");
+            for (ArrayList<String> row : outputs) {
+                for (String str : row)
+                    finalOutput.append(str).append('\t');
+                finalOutput.append('\n');
+            }
 
-            String pred = "AI4Bharat";
-            resultView.putExtra("pred",pred);
-            resultView.putExtra("result_path", "result.jpg");
-            Log.d(TAG, "Displaying image...");
+            resultView.putExtra("pred", finalOutput.toString());
+            resultView.putExtra("result_path", saveDetectionTo);
+            Log.d(TAG, "Displaying result...");
             startActivity(resultView);
 
         }
