@@ -159,14 +159,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Processing image...");
             List<ArrayList<String>> outputs = textExtractor.extractText(imageBitmap, saveDetectionTo, getApplicationContext());
 
-            StringBuilder finalOutput = new StringBuilder("");
-            for (ArrayList<String> row : outputs) {
-                for (String str : row)
-                    finalOutput.append(str).append('\t');
-                finalOutput.append('\n');
-            }
-
-            resultView.putExtra("pred", finalOutput.toString());
+            resultView.putExtra("pred", textExtractor.outputToString(outputs));
             resultView.putExtra("result_path", saveDetectionTo);
             Log.d(TAG, "Displaying result...");
             startActivity(resultView);

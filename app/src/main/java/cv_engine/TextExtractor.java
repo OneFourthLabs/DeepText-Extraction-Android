@@ -2,6 +2,7 @@ package cv_engine;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.util.Size;
 
 import org.opencv.android.Utils;
@@ -62,20 +63,25 @@ public class TextExtractor {
     }
 
     public List<ArrayList<String>> extractText(Bitmap imageBitmap, String saveDetectionTo, Context context) {
-
+        long start = System.currentTimeMillis();
         List<ArrayList<Bitmap>> textCrops = getDetections(imageBitmap, saveDetectionTo, context);
+        Log.d("DETECTION", ""+(System.currentTimeMillis()-start)/1000.0);
 
-        List<ArrayList<String>> outputs = new ArrayList<> ();
-        for (ArrayList<Bitmap> row : textCrops) {
-            ArrayList<String> currentPredictionRow = new ArrayList<> ();
-            for (Bitmap bmp : row) {
-                String output = recognizer.predict(bmp);
-                currentPredictionRow.add(output);
-            }
-            outputs.add(currentPredictionRow);
-        }
+        start = System.currentTimeMillis();
+        List<ArrayList<String>> outputs = recognizer.bulkPredict(textCrops, 0.0f);
+        Log.d("RECOGNITION", ""+(System.currentTimeMillis()-start)/1000.0);
 
         return outputs;
+    }
+
+    public String outputToString(List<ArrayList<String>> outputs) {
+        StringBuilder finalOutput = new StringBuilder("");
+        for (ArrayList<String> row : outputs) {
+            for (String str : row)
+                finalOutput.append(str).append('\t');
+            finalOutput.append('\n');
+        }
+        return finalOutput.toString();
     }
 
 }

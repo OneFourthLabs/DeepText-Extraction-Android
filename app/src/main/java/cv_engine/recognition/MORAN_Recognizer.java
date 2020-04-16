@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
+import android.util.Pair;
 import android.util.Size;
 
 import utils.TensorImageCustomUtils;
@@ -12,7 +13,9 @@ import org.pytorch.IValue;
 import org.pytorch.Module;
 import org.pytorch.Tensor;
 
-public class MORAN_Recognizer {
+import static utils.ImageUtils.bitmapToGrayscale;
+
+public class MORAN_Recognizer extends TextRecognizerTorch {
 
     final Module model;
     public static final Size inputSize = new Size(100, 32);
@@ -23,9 +26,7 @@ public class MORAN_Recognizer {
     static final char[] output_map = alphabet.toCharArray();
 
     public MORAN_Recognizer(String modelPath){
-
         model = Module.load(modelPath);
-
     }
 
     public void setMeanAndStd(float mean, float std){
@@ -33,65 +34,35 @@ public class MORAN_Recognizer {
         this.std = std;
     }
 
-    public Bitmap toGrayscale(Bitmap bmpOriginal)
-    {
-        int width, height;
-        height = bmpOriginal.getHeight();
-        width = bmpOriginal.getWidth();
-
-        Bitmap bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas c = new Canvas(bmpGrayscale);
-        Paint paint = new Paint();
-        ColorMatrix cm = new ColorMatrix();
-        cm.setSaturation(0);
-        ColorMatrixColorFilter f = new ColorMatrixColorFilter(cm);
-        paint.setColorFilter(f);
-        c.drawBitmap(bmpOriginal, 0, 0, paint);
-        return bmpGrayscale;
-    }
-
-    public Tensor preprocess(Bitmap bitmap){
-
+    public Tensor preprocess(Bitmap bitmap) {
         bitmap = Bitmap.createScaledBitmap(bitmap, inputSize.getWidth(), inputSize.getHeight(),false);
-        bitmap = toGrayscale(bitmap);
+        bitmap = bitmapToGrayscale(bitmap);
         return TensorImageCustomUtils.bitmapGrayscaleToFloat32Tensor(bitmap, this.mean, this.std);
-
     }
 
-    public int argMax(float[] inputs){
-
-        int maxIndex = -1;
-        float maxvalue = 0.0f;
-
-        for (int i = 0; i < inputs.length; i++){
-
-            if(inputs[i] > maxvalue) {
-
-                maxIndex = i;
-                maxvalue = inputs[i];
-            }
-
-        }
-        return maxIndex;
-    }
-
-    String getPrediction(float[] predictionBlob, int maxChars) {
+    Pair<String, Float> getPrediction(float[] predictionBlob, int maxChars) {
+        // Sorry for the mess
         StringBuilder output = new StringBuilder();
-        for (int i = 0, max_j=0; i < maxChars; ++i, max_j=0) {
+        float confidence = 0; // Geometric mean of all probabilities
+        float partitionFunction = 0;
+        for (int i = 0, max_j=0; i < maxChars; ++i, max_j=0, partitionFunction=0) {
             for (int j = 0; j < output_map.length; ++j) {
+                partitionFunction += Math.exp(predictionBlob[i*output_map.length + j]);
+                // TODO: Use ArgMax
                 if (predictionBlob[i*output_map.length + j] > predictionBlob[i*output_map.length + max_j])
                     max_j = j;
             }
             if (output_map[max_j] == '$') break;
+            confidence += predictionBlob[i*output_map.length + max_j] - Math.log(partitionFunction);
             output.append(output_map[max_j]);
         }
-        return output.toString();
+        confidence = output.length() > 0 ? (float) Math.exp(confidence / output.length()) : 0;
+        return new Pair<String, Float>(output.toString(), confidence);
     }
 
-    public String predict(Bitmap bitmap){
+    public Pair<String, Float> predict(Bitmap bitmap) {
 
         Tensor tensor = preprocess(bitmap);
-
 
         int maxLength = 20;
         long[] textBlob = new long[maxLength];
@@ -110,7 +81,6 @@ public class MORAN_Recognizer {
         Tensor pred = outs[0].toTensor();
 
         return getPrediction(pred.getDataAsFloatArray(), maxLength);
-
     }
 
 }
