@@ -6,7 +6,7 @@ import indian_docs_processor.DocProcessor.DocType;
 
 public abstract class DocumentBase {
 
-    String id, name;
+    String id, name, DOB;
     public static final DocType docType = DocType.UNKNOWN;
 
     DocumentBase() {
@@ -14,8 +14,13 @@ public abstract class DocumentBase {
     }
 
     DocumentBase(String id, String name) {
+        this(id, name, null);
+    }
+
+    DocumentBase(String id, String name, String DOB) {
         this.id = id;
         this.name = name;
+        this.DOB = DOB;
     }
 
     // static methods can't be abstract?? Java, y u do diz ;(

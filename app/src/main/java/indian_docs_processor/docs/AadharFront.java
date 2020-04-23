@@ -10,7 +10,6 @@ import indian_docs_processor.DocProcessor;
 public class AadharFront extends DocumentBase {
 
     public static final DocProcessor.DocType docType = DocProcessor.DocType.AADHAR_FRONT;
-    private String DOB;
     private char gender;
 
     public static AadharFront parseDocFromString(@NonNull String docString) {
@@ -51,27 +50,27 @@ public class AadharFront extends DocumentBase {
         System.out.println("Name: " + aadharFront.name);
 
         // The next line will contain some regional text followed by "DOB: dd/MM/YYYY"
-        // Since our current model cannot predict special chars, we'll search for a 6-8 digit number
-        // TODO: Handle dd/MM/YYYY also in the same regex
 
         if (++i >= lines.length)
             return null;
 
         aadharFront.DOB = lines[i].substring(lines[i].indexOf("DOB")+3);
 
-        Pattern dobPattern = Pattern.compile("\\d{6,8}");
+        Pattern dobPattern = Pattern.compile("(\\d{1,2})[/]{0,1}(\\d{1,2})[/]{0,1}(\\d{4})");
         Matcher dobMatcher = dobPattern.matcher(aadharFront.DOB);
         if (!dobMatcher.find())
             return null;
         aadharFront.DOB = dobMatcher.group(); // Assumes there will be 1 match
         System.out.println("DOB: " + aadharFront.DOB);
 
-        // The next line contains gender, something more sensitive than Aadhar ID for liberals
+        // The next line contains gender. Not sure if optional on Aadhar
         if (++i >= lines.length)
             return null;
 
-        // TODO: Handle queers. I mean, not in an Abrahamic way
-        aadharFront.gender = lines[i].contains("FEMALE") ? 'F' : 'M';
+        if (lines[i].contains("TRANS"))
+            aadharFront.gender = 'T';
+        else
+            aadharFront.gender = lines[i].contains("FEMALE") ? 'F' : 'M';
         System.out.println("Gender: " + aadharFront.gender);
 
         // Now brace yourself, anywhere in the next few lines we may get the Aadhar ID
