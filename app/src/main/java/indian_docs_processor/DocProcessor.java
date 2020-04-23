@@ -2,6 +2,7 @@ package indian_docs_processor;
 
 import indian_docs_processor.docs.AadharFront;
 import indian_docs_processor.docs.DocumentBase;
+import indian_docs_processor.docs.PanCard;
 
 public class DocProcessor {
 
@@ -21,6 +22,8 @@ public class DocProcessor {
         switch (docType) {
             case AADHAR_FRONT:
                 return AadharFront.parseDocFromString(docString);
+            case PAN_CARD:
+                return PanCard.parseDocFromString(docString);
             default:
                 return null;
         }
@@ -28,9 +31,11 @@ public class DocProcessor {
 
     public static DocType detectDocType(String docString) {
 
-        if (AadharFront.isMatched(docString)) {
+        if (AadharFront.isMatched(docString))
             return DocType.AADHAR_FRONT;
-        }
+
+        if (PanCard.isMatched(docString))
+            return DocType.PAN_CARD;
 
         return DocType.UNKNOWN;
     }
