@@ -24,8 +24,34 @@
         app:layout_constraintEnd_toEndOf="@id/image"
         app:layout_constraintTop_toBottomOf="@id/image"
         android:gravity="center"
-        android:textSize="12pt"
-        android:onClick="btnClickDisplayPredictions"
+        android:textSize="9pt"
+        android:id="@+id/btnDisplayPredictions"
+        android:onClick="btnDisplayPredictions_Click"
         android:text="Display Prediction" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@id/btnDisplayPredictions"
+        app:layout_constraintEnd_toEndOf="@id/btnDisplayPredictions"
+        app:layout_constraintTop_toBottomOf="@id/btnDisplayPredictions"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnDisplayAadhar"
+            android:onClick="btnDisplayAadhar_Click"
+            android:text="Aadhar"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnDisplayPAN"
+            android:onClick="btnDisplayPAN_Click"
+            android:text="PAN Card"/>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
