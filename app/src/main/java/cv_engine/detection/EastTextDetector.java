@@ -37,6 +37,12 @@ public class EastTextDetector extends TextDetectorCV {
         model = Dnn.readNetFromTensorflow(modelPath);
     }
 
+    public Mat preprocess(Mat frame) {
+        // binarizeInRGB(frame).copyTo(frame); // Increases FP's drastically, have to tune parameters for each case
+        Mat blob = Dnn.blobFromImage(frame, 1.0, input_size, new Scalar(123.68, 116.78, 103.94), true, false);
+        return blob;
+    }
+
     public Point[][] detect(Mat frame) {
         return detect(frame, 0.5f, 0.4f);
     }
@@ -45,7 +51,7 @@ public class EastTextDetector extends TextDetectorCV {
 
         int W = (int)(input_size.width / 4); // width of the output geometry  / score maps
         int H = (int)(input_size.height / 4); // height of those. the geometry has 4, vertically stacked maps, the score one 1
-        Mat blob = Dnn.blobFromImage(frame, 1.0, input_size, new Scalar(123.68, 116.78, 103.94), true, false);
+        Mat blob = preprocess(frame);
         model.setInput(blob);
 
         List<Mat> outs = new ArrayList<>(2);

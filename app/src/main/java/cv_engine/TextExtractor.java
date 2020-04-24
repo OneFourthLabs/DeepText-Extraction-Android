@@ -34,8 +34,8 @@ public class TextExtractor {
         // Convert Bitmap ARGB to RGB Mat: https://stackoverflow.com/a/60724380
         Mat inputImg = new Mat();
         Utils.bitmapToMat(imageBitmap, inputImg);
-        Imgproc.cvtColor(inputImg, inputImg, Imgproc.COLOR_RGBA2RGB);
-        Mat outputImg = inputImg.clone();
+        Mat outputImg = new Mat();
+        Imgproc.cvtColor(inputImg, outputImg, Imgproc.COLOR_RGBA2RGB);
 
         // Get the detections
         Point[][] bBoxes = detector.detect(outputImg);
