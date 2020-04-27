@@ -8,7 +8,8 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/capture"
+        android:id="@+id/btnCaptureText"
+        android:onClick="btnCapture"
         android:text="Take A Picture"
         android:textColor="#ffffff"
         android:textSize="26dp"
@@ -20,4 +21,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         />
+
+    <Button
+        android:id="@+id/btnCaptureQR"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#83D5C4"
+        android:fontFamily="cursive"
+        android:onClick="btnCapture"
+        android:padding="5dp"
+        android:layout_margin="50dp"
+        android:text="Detect QR code"
+        android:textColor="#ffffff"
+        android:textSize="26dp"
+        app:layout_constraintEnd_toEndOf="@id/btnCaptureText"
+        app:layout_constraintStart_toStartOf="@id/btnCaptureText"
+        app:layout_constraintTop_toBottomOf="@id/btnCaptureText" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -15,6 +15,7 @@ import java.util.List;
 
 import cv_engine.detection.EastTextDetector;
 import cv_engine.recognition.MORAN_Recognizer;
+import utils.CvUtils;
 import utils.ImageUtils;
 
 public class TextExtractor {
@@ -31,11 +32,8 @@ public class TextExtractor {
         // Resize image to pass to detector model
         imageBitmap = ImageUtils.letterboxResizeBitmap(imageBitmap, (int) detector.input_size.width, (int) detector.input_size.height);
 
-        // Convert Bitmap ARGB to RGB Mat: https://stackoverflow.com/a/60724380
-        Mat inputImg = new Mat();
-        Utils.bitmapToMat(imageBitmap, inputImg);
-        Mat outputImg = new Mat();
-        Imgproc.cvtColor(inputImg, outputImg, Imgproc.COLOR_RGBA2RGB);
+        Mat inputImg = CvUtils.convertBitmapARGB2MatRGB(imageBitmap);
+        Mat outputImg = inputImg.clone();
 
         // Get the detections
         Point[][] bBoxes = detector.detect(outputImg);

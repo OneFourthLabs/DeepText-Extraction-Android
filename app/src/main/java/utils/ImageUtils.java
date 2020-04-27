@@ -8,6 +8,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.media.ExifInterface;
 import android.os.Environment;
 
 import java.io.File;
@@ -51,6 +52,47 @@ public class ImageUtils {
         return true;
     }
 
+    public static Matrix getOrientationMatrix(String path) {
+        // Credits: https://stackoverflow.com/q/40000782
+        Matrix matrix = new Matrix();
+        ExifInterface exif;
+        try {
+            exif = new ExifInterface(path);
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                    matrix.setScale(-1, 1);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    matrix.setRotate(180);
+                    break;
+                case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                    matrix.setRotate(180);
+                    matrix.postScale(-1, 1);
+                    break;
+                case ExifInterface.ORIENTATION_TRANSPOSE:
+                    matrix.setRotate(90);
+                    matrix.postScale(-1, 1);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    matrix.setRotate(90);
+                    break;
+                case ExifInterface.ORIENTATION_TRANSVERSE:
+                    matrix.setRotate(-90);
+                    matrix.postScale(-1, 1);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    matrix.setRotate(-90);
+                    break;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return matrix;
+    }
+
     public static Bitmap readBitmapFromAppDirectory(String filename, Context context) {
         File externalFilesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File readPath = new File(externalFilesDir, filename);
@@ -60,6 +102,8 @@ public class ImageUtils {
     private static Bitmap readBitmapFromImage(File readPath) {
         try {
             Bitmap b = BitmapFactory.decodeStream(new FileInputStream(readPath));
+            // Adjust orientation
+            b = Bitmap.createBitmap(b, 0, 0, b.getWidth(), b.getHeight(), getOrientationMatrix(readPath.getAbsolutePath()), false);
             return b;
         }
         catch (FileNotFoundException e)

@@ -1,5 +1,8 @@
 package utils;
 
+import android.graphics.Bitmap;
+
+import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -35,6 +38,14 @@ public class CvUtils {
         Mat destination = new Mat();
          Imgproc.threshold(tmp, destination, 0, 255, Imgproc.THRESH_BINARY|Imgproc.THRESH_OTSU);
          return destination;
+    }
+
+    public static Mat convertBitmapARGB2MatRGB(Bitmap imageBitmap) {
+        // Convert Bitmap ARGB to RGB Mat: https://stackoverflow.com/a/60724380
+        Mat outputImg = new Mat();
+        Utils.bitmapToMat(imageBitmap, outputImg);
+        Imgproc.cvtColor(outputImg, outputImg, Imgproc.COLOR_RGBA2RGB);
+        return outputImg;
     }
 
 }
