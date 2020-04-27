@@ -9,6 +9,8 @@ import org.opencv.core.Point;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import utils.CvUtils;
+
 public abstract class TextDetectorCV {
 
     String modelPath;
@@ -21,6 +23,7 @@ public abstract class TextDetectorCV {
         this.modelPath = modelPath;
     }
 
+    public abstract Mat preprocess(Mat image);
     public abstract Point[][] detect(Mat image);
 
     /**
@@ -89,7 +92,8 @@ public abstract class TextDetectorCV {
         ArrayList<Mat> currentRow = new ArrayList<Mat> ();
         for (int i = 0; i < rectVertices.length; ++i) {
             Mat crop = cropSlantRect(rectVertices[i], frame, w, h);
-            if (rectVertices[i][1].x < last_x && Math.abs(rectVertices[i][1].y - last_y) >= Y_THRESH_MAX) {
+            // crop = binarizeInRGB(crop);
+            if (Math.abs(rectVertices[i][1].y - last_y) >= Y_THRESH_MAX || rectVertices[i][1].x < last_x) {
                 crops.add(currentRow);
                 currentRow = new ArrayList<Mat> ();
             }
@@ -99,6 +103,13 @@ public abstract class TextDetectorCV {
         }
         crops.add(currentRow);
         return crops;
+    }
+
+    public Mat binarizeInRGB(Mat frame) {
+        frame = CvUtils.rgb2gray(frame);
+        frame = CvUtils.binarizeGaussianOtsu(frame);
+        frame = CvUtils.gray2rgb(frame);
+        return frame;
     }
 
 }

@@ -10,6 +10,11 @@ android {
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
         applicationId "org.ai4bharat.indian_doc_xtract"
         minSdkVersion 21
@@ -53,6 +58,13 @@ android {
 
 }
 
+// BoofCV conflicts with Android stuff
+configurations {
+    all*.exclude group: "xmlpull", module: "xmlpull"
+    all*.exclude group: "org.apache.commons", module: "commons-compress"
+    all*.exclude group: "com.thoughtworks.xstream", module: "commons-compress"
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
@@ -68,5 +80,10 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    ['boofcv-android', 'boofcv-core'].each {
+        String a ->
+            implementation group: 'org.boofcv', name: a, version: '0.33'
+    }
+
     implementation project(path: ':opencv')
 }

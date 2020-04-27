@@ -26,6 +26,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import cv_engine.QrDetectorBoofCV;
 import cv_engine.TextExtractor;
 import cv_engine.detection.EastTextDetector;
 import utils.ImageUtils;
@@ -45,8 +46,10 @@ import static org.ai4bharat.indian_doc_xtract.Constants.*;
 public class MainActivity extends AppCompatActivity {
 
     private static final String  TAG              = "MainActivity";
+    String captureMode;
 
     TextExtractor textExtractor;
+    QrDetectorBoofCV qrDetector;
     ImgCaptureHandler imgCaptureHandler;
     boolean isOpenCvInitialized;
 
@@ -54,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         textExtractor = new TextExtractor(DETECTION_INPUT_SIZE,
                 AndroidUtils.assetFilePath(MainActivity.this,"frozen_east_text_detection.pb"),
                 AndroidUtils.assetFilePath(MainActivity.this,"moran.pt"));
+        qrDetector = new QrDetectorBoofCV();
         return true;
     }
 
@@ -82,22 +86,6 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         imgCaptureHandler = new ImgCaptureHandler(true, getApplicationContext());
 
-        Button capture = findViewById(R.id.capture);
-
-        capture.setOnClickListener(new View.OnClickListener(){
-
-            @Override
-            public void onClick(View view) {
-                try{
-                    Intent cameraIntent = imgCaptureHandler.getTakePictureIntent(MainActivity.this);
-                    startActivityForResult(cameraIntent, ImgCaptureHandler.REQUEST_TAKE_PHOTO);
-                } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "ERROR: Unable to start camera", Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, e.getMessage());
-                }
-            }
-        });
-
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,6 +94,24 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+    }
+
+    public void btnCapture(View view) {
+        switch (view.getId()) {
+            case R.id.btnCaptureText:
+                captureMode = "text"; break;
+            case R.id.btnCaptureQR:
+                captureMode = "qr"; break;
+            default:
+                return;
+        }
+        try{
+            Intent cameraIntent = imgCaptureHandler.getTakePictureIntent(MainActivity.this);
+            startActivityForResult(cameraIntent, ImgCaptureHandler.REQUEST_TAKE_PHOTO);
+        } catch (Exception e) {
+            Toast.makeText(MainActivity.this, "ERROR: Unable to start camera", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, e.getMessage());
+        }
     }
 
     @Override
@@ -157,9 +163,17 @@ public class MainActivity extends AppCompatActivity {
             String saveDetectionTo = "result.jpg";
 
             Log.d(TAG, "Processing image...");
-            List<ArrayList<String>> outputs = textExtractor.extractText(imageBitmap, saveDetectionTo, getApplicationContext());
+            String prediction = "---NO PREDICTIONS---";
+            if (captureMode.contains("qr")) {
+                List<String> outputs = qrDetector.detectMessages(imageBitmap);
+                prediction = outputs.isEmpty() ? "---NO QR FOUND---" : outputs.get(0);
+                saveDetectionTo = imgCaptureHandler.currentPhotoName;
+            } else {
+                List<ArrayList<String>> outputs = textExtractor.extractText(imageBitmap, saveDetectionTo, getApplicationContext());
+                prediction = textExtractor.outputToString(outputs);
+            }
 
-            resultView.putExtra("pred", textExtractor.outputToString(outputs));
+            resultView.putExtra("pred", prediction);
             resultView.putExtra("result_path", saveDetectionTo);
             Log.d(TAG, "Displaying result...");
             startActivity(resultView);
