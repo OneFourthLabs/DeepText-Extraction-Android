@@ -6,7 +6,7 @@ import indian_docs_processor.DocProcessor.DocType;
 
 public abstract class DocumentBase {
 
-    String id, name, DOB;
+    protected String id, name, DOB;
     public static final DocType docType = DocType.UNKNOWN;
 
     DocumentBase() {

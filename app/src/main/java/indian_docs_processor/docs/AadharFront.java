@@ -10,7 +10,7 @@ import indian_docs_processor.DocProcessor;
 public class AadharFront extends DocumentBase {
 
     public static final DocProcessor.DocType docType = DocProcessor.DocType.AADHAR_FRONT;
-    private char gender;
+    protected char gender;
 
     public static AadharFront parseDocFromString(@NonNull String docString) {
 
