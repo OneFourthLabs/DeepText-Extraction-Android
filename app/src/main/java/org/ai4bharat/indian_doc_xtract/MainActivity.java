@@ -32,6 +32,7 @@ import java.util.List;
 import cv_engine.QrDetectorBoofCV;
 import cv_engine.TextExtractor;
 import cv_engine.detection.EastTextDetector;
+import indian_docs_processor.DocProcessor;
 import utils.ImageUtils;
 import utils.ImgCaptureHandler;
 
@@ -96,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
     void setupUI() {
         spinnerChooseDoc = findViewById(R.id.spinner_choose_doc);
         ArrayList<String> docCategories = new ArrayList<String>(Arrays.asList(Constants.DOC_TYPES));
+        docCategories.addAll(Arrays.asList(DocProcessor.DOCS_SUPPORTED));
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, docCategories);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerChooseDoc.setAdapter(dataAdapter);

@@ -15,8 +15,31 @@ public class DocProcessor {
         REGIONAL_VOTER_ID,
     };
 
+    public static final String[] DOCS_SUPPORTED = {
+            "AADHAR FRONT SIDE",
+            "AADHAR QR",
+            "PAN CARD FRONT SIDE"
+    };
+
     public DocProcessor() {
 
+    }
+
+    public static DocumentBase parseDocFromResult(String docName, String docString) {
+        docName = docName.toUpperCase();
+        if (docName.contains("QR")) {
+            if (docName.contains("AADHAR"))
+                return getDocFromQR(DocType.AADHAR_FULL, docString);
+            return null;
+        }
+
+        if (docName.contains("AADHAR"))
+            return getDocFromString(DocType.AADHAR_FRONT, docString);
+
+        if (docName.contains("PAN"))
+            return getDocFromString(DocType.PAN_CARD, docString);
+
+        return null;
     }
 
     public static DocumentBase getDocFromString(DocType docType, String docString) {
