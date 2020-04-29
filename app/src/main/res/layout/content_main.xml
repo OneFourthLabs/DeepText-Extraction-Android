@@ -5,37 +5,45 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <Button
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/btnCaptureText"
-        android:onClick="btnCapture"
-        android:text="Take A Picture"
-        android:textColor="#ffffff"
-        android:textSize="26dp"
-        android:background="#83D5C4"
-        android:padding="5dp"
-        android:fontFamily="cursive"
+        android:gravity="center"
+        android:orientation="vertical"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <Button
-        android:id="@+id/btnCaptureQR"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="#83D5C4"
-        android:fontFamily="cursive"
-        android:onClick="btnCapture"
-        android:padding="5dp"
-        android:layout_margin="50dp"
-        android:text="Detect QR code"
-        android:textColor="#ffffff"
-        android:textSize="26dp"
-        app:layout_constraintEnd_toEndOf="@id/btnCaptureText"
-        app:layout_constraintStart_toStartOf="@id/btnCaptureText"
-        app:layout_constraintTop_toBottomOf="@id/btnCaptureText" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dip"
+            android:text="SELECT DOCUMENT TYPE:"
+            android:textSize="15dp"
+            android:layout_marginBottom="5dp"
+            />
+
+        <Spinner
+            android:id="@+id/spinner_choose_doc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dip"
+            />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_capture"
+            android:onClick="btnCapture"
+            android:text="Take A Picture"
+            android:textColor="#ffffff"
+            android:textSize="20dp"
+            android:background="#83D5C4"
+            android:padding="5dp"
+            android:layout_margin="40dp"
+             />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

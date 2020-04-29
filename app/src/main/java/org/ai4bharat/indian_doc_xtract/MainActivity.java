@@ -19,11 +19,14 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import cv_engine.QrDetectorBoofCV;
@@ -52,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
     QrDetectorBoofCV qrDetector;
     ImgCaptureHandler imgCaptureHandler;
     boolean isOpenCvInitialized;
+
+    Spinner spinnerChooseDoc;
 
     boolean loadModels() {
         textExtractor = new TextExtractor(DETECTION_INPUT_SIZE,
@@ -85,6 +90,15 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         imgCaptureHandler = new ImgCaptureHandler(true, getApplicationContext());
+        setupUI();
+    }
+
+    void setupUI() {
+        spinnerChooseDoc = findViewById(R.id.spinner_choose_doc);
+        ArrayList<String> docCategories = new ArrayList<String>(Arrays.asList(Constants.DOC_TYPES));
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, docCategories);
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerChooseDoc.setAdapter(dataAdapter);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -97,14 +111,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void btnCapture(View view) {
-        switch (view.getId()) {
-            case R.id.btnCaptureText:
-                captureMode = "text"; break;
-            case R.id.btnCaptureQR:
-                captureMode = "qr"; break;
-            default:
-                return;
-        }
+        captureMode = String.valueOf(spinnerChooseDoc.getSelectedItem()).toLowerCase();
         try{
             Intent cameraIntent = imgCaptureHandler.getTakePictureIntent(MainActivity.this);
             startActivityForResult(cameraIntent, ImgCaptureHandler.REQUEST_TAKE_PHOTO);
@@ -165,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Processing image...");
             String prediction = "---NO PREDICTIONS---";
             if (captureMode.contains("qr")) {
+                Toast.makeText(getApplicationContext(), "Detecting text from QR code...", Toast.LENGTH_SHORT).show();
                 List<String> outputs = qrDetector.detectMessages(imageBitmap);
                 prediction = outputs.isEmpty() ? "---NO QR FOUND---" : outputs.get(0);
                 saveDetectionTo = imgCaptureHandler.currentPhotoName;
@@ -174,6 +182,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             resultView.putExtra("pred", prediction);
+            resultView.putExtra("docType", captureMode);
             resultView.putExtra("result_path", saveDetectionTo);
             Log.d(TAG, "Displaying result...");
             startActivity(resultView);

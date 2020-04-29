@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
 import android.util.Size;
+import android.widget.Toast;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
@@ -62,10 +63,12 @@ public class TextExtractor {
 
     public List<ArrayList<String>> extractText(Bitmap imageBitmap, String saveDetectionTo, Context context) {
         long start = System.currentTimeMillis();
+        Toast.makeText(context, "Detecting Text in image...", Toast.LENGTH_SHORT).show();
         List<ArrayList<Bitmap>> textCrops = getDetections(imageBitmap, saveDetectionTo, context);
         Log.d("DETECTION", ""+(System.currentTimeMillis()-start)/1000.0);
 
         start = System.currentTimeMillis();
+        Toast.makeText(context, "Recognizing " + textCrops.size() + " text regions detected...", Toast.LENGTH_SHORT).show();
         List<ArrayList<String>> outputs = recognizer.bulkPredict(textCrops, 0.0f);
         Log.d("RECOGNITION", ""+(System.currentTimeMillis()-start)/1000.0);
 
