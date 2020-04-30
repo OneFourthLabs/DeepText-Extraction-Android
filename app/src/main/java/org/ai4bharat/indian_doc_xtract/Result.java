@@ -26,6 +26,7 @@ public class Result extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
         Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle(getIntent().getStringExtra("docType"));
         setSupportActionBar(toolbar);
 
 //        FloatingActionButton fab = findViewById(R.id.fab);

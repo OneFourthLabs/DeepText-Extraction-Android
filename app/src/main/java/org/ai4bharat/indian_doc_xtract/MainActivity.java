@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void btnCapture(View view) {
-        captureMode = String.valueOf(spinnerChooseDoc.getSelectedItem()).toLowerCase();
+        captureMode = String.valueOf(spinnerChooseDoc.getSelectedItem());
         try{
             Intent cameraIntent = imgCaptureHandler.getTakePictureIntent(MainActivity.this);
             startActivityForResult(cameraIntent, ImgCaptureHandler.REQUEST_TAKE_PHOTO);
@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
 
             Log.d(TAG, "Processing image...");
             String prediction = "---NO PREDICTIONS---";
-            if (captureMode.contains("qr")) {
+            if (captureMode.contains("QR")) {
                 Toast.makeText(getApplicationContext(), "Detecting text from QR code...", Toast.LENGTH_SHORT).show();
                 List<String> outputs = qrDetector.detectMessages(imageBitmap);
                 prediction = outputs.isEmpty() ? "---NO QR FOUND---" : outputs.get(0);
