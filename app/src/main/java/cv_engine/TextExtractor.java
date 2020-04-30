@@ -45,13 +45,13 @@ public class TextExtractor {
             ImageUtils.saveBitmapToAppDirectoryAsJPG(imageBitmap, saveDetectionTo, context);
         }
 
-        List<ArrayList<Mat>> textCrops = detector.getFixedCropImages(bBoxes, inputImg, recognizer.inputSize.getWidth(), recognizer.inputSize.getHeight());
+        List<ArrayList<Mat>> textCrops = detector.getFixedCropImages(bBoxes, inputImg, 0, recognizer.inputSize.getHeight());
         List<ArrayList<Bitmap>> textBitmaps = new ArrayList<ArrayList<Bitmap>>();
 
         for (ArrayList<Mat> row : textCrops) {
             ArrayList<Bitmap> currentRow = new ArrayList<Bitmap> ();
             for (Mat mat : row) {
-                Bitmap bmp = Bitmap.createBitmap(recognizer.inputSize.getWidth(), recognizer.inputSize.getHeight(), Bitmap.Config.ARGB_8888);
+                Bitmap bmp = Bitmap.createBitmap(mat.width(), mat.height(), Bitmap.Config.ARGB_8888);
                 Utils.matToBitmap(mat, bmp);
                 currentRow.add(bmp);
             }

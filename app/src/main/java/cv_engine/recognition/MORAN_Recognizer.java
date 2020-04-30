@@ -34,8 +34,15 @@ public class MORAN_Recognizer extends TextRecognizerTorch {
         this.std = std;
     }
 
+    int getVariableWidth(int imageWidth, int imageHeight) {
+        if (imageHeight == inputSize.getHeight())
+            return imageWidth;
+        return (int) (inputSize.getHeight()/ (float) imageHeight) * imageWidth;
+    }
+
     public Tensor preprocess(Bitmap bitmap) {
-        bitmap = Bitmap.createScaledBitmap(bitmap, inputSize.getWidth(), inputSize.getHeight(),false);
+        int width = getVariableWidth(bitmap.getWidth(), bitmap.getHeight());
+        bitmap = Bitmap.createScaledBitmap(bitmap, width, inputSize.getHeight(),false);
         bitmap = bitmapToGrayscale(bitmap);
         return TensorImageCustomUtils.bitmapGrayscaleToFloat32Tensor(bitmap, this.mean, this.std);
     }
@@ -64,7 +71,8 @@ public class MORAN_Recognizer extends TextRecognizerTorch {
 
         Tensor tensor = preprocess(bitmap);
 
-        int maxLength = 20;
+        // int maxLength = 20; // Default, for width=100
+        int maxLength = (int) (0.2 * getVariableWidth(bitmap.getWidth(), bitmap.getHeight()));
         long[] textBlob = new long[maxLength];
         for (int i = 0; i < maxLength; ++i) textBlob[i] = 0;
         Tensor textTensor = Tensor.fromBlob(textBlob, new long[]{maxLength});

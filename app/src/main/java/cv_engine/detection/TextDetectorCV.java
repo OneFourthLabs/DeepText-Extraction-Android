@@ -26,6 +26,12 @@ public abstract class TextDetectorCV {
     public abstract Mat preprocess(Mat image);
     public abstract Point[][] detect(Mat image);
 
+    private double euclideanDistance(Point a, Point b) {
+        return Math.sqrt(
+                (a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y)
+        );
+    }
+
     /**
      * To extract a slanted bounding box from an image as a rectangle image
      * References:
@@ -43,6 +49,18 @@ public abstract class TextDetectorCV {
                 vertices[2],
                 vertices[3]
         );
+
+        if (w <= 0) {
+            double maxWidth = Math.max(
+                    euclideanDistance(vertices[1], vertices[2]),
+                    euclideanDistance(vertices[0], vertices[3])
+            );
+            double maxHeight = Math.max(
+                    euclideanDistance(vertices[0], vertices[1]),
+                    euclideanDistance(vertices[2], vertices[3])
+            );
+            w = (int) (h/maxHeight * maxWidth) + 1;
+        }
 
         MatOfPoint2f dst = new MatOfPoint2f(
                 new Point(0, h-1),
