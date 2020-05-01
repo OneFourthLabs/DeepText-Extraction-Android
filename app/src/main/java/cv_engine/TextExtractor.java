@@ -19,6 +19,8 @@ import cv_engine.recognition.MORAN_Recognizer;
 import utils.CvUtils;
 import utils.ImageUtils;
 
+import static utils.CvUtils.rgb2gray;
+
 public class TextExtractor {
 
     EastTextDetector detector;
@@ -29,7 +31,7 @@ public class TextExtractor {
         recognizer = new MORAN_Recognizer(moranRecognizerModel);
     }
 
-    List<ArrayList<Bitmap>> getDetections(Bitmap imageBitmap, String saveDetectionTo, Context context) {
+    List<ArrayList<Bitmap>> getDetections(Bitmap imageBitmap, String saveDetectionTo, boolean getGrayScale, Context context) {
         // Resize image to pass to detector model
         imageBitmap = ImageUtils.letterboxResizeBitmap(imageBitmap, (int) detector.input_size.width, (int) detector.input_size.height);
 
@@ -45,6 +47,9 @@ public class TextExtractor {
             ImageUtils.saveBitmapToAppDirectoryAsJPG(imageBitmap, saveDetectionTo, context);
         }
 
+        // Get Grayscale text crops
+        if (getGrayScale)
+            inputImg = rgb2gray(inputImg);
         List<ArrayList<Mat>> textCrops = detector.getFixedCropImages(bBoxes, inputImg, 0, recognizer.inputSize.getHeight());
         List<ArrayList<Bitmap>> textBitmaps = new ArrayList<ArrayList<Bitmap>>();
 
@@ -62,15 +67,16 @@ public class TextExtractor {
     }
 
     public List<ArrayList<String>> extractText(Bitmap imageBitmap, String saveDetectionTo, Context context) {
+        final boolean grayScale = true;
         long start = System.currentTimeMillis();
         Toast.makeText(context, "Detecting Text in image...", Toast.LENGTH_SHORT).show();
-        List<ArrayList<Bitmap>> textCrops = getDetections(imageBitmap, saveDetectionTo, context);
+        List<ArrayList<Bitmap>> textCrops = getDetections(imageBitmap, saveDetectionTo, grayScale, context);
         Log.d("DETECTION", ""+(System.currentTimeMillis()-start)/1000.0);
 
         start = System.currentTimeMillis();
         Toast.makeText(context, "Recognizing " + textCrops.size() + " text regions detected...", Toast.LENGTH_SHORT).show();
-        List<ArrayList<String>> outputs = recognizer.bulkPredict(textCrops, 0.0f);
-        Log.d("RECOGNITION", ""+(System.currentTimeMillis()-start)/1000.0);
+        List<ArrayList<String>> outputs = recognizer.bulkPredict(textCrops, 0.0f, !grayScale);
+        Log.d("RECOGNITION", ""+(System.currentTimeMillis()-start)/1000.0 + "/" + textCrops.size());
 
         return outputs;
     }

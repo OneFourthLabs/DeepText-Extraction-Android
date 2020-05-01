@@ -3,6 +3,8 @@ package cv_engine.recognition;
 import android.graphics.Bitmap;
 import android.util.Pair;
 
+import org.pytorch.Tensor;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,14 +24,15 @@ public abstract class TextRecognizerTorch {
         return maxIndex;
     }
 
-    public abstract Pair<String, Float> predict(Bitmap bitmap);
+    abstract Tensor preprocess(Bitmap bitmap, boolean convertToGrayScale);
+    public abstract Pair<String, Float> predict(Bitmap bitmap, boolean convertToGrayScale);
 
-    public List<ArrayList<String>> bulkPredict(List<ArrayList<Bitmap>> textCrops, float confidenceThreshold) {
+    public List<ArrayList<String>> bulkPredict(List<ArrayList<Bitmap>> textCrops, float confidenceThreshold, boolean convertToGrayScale) {
         List<ArrayList<String>> outputs = new ArrayList<> ();
         for (ArrayList<Bitmap> row : textCrops) {
             ArrayList<String> currentPredictionRow = new ArrayList<> ();
             for (Bitmap bmp : row) {
-                Pair<String, Float> output = predict(bmp);
+                Pair<String, Float> output = predict(bmp, convertToGrayScale);
                 if (output.second > confidenceThreshold)
                     currentPredictionRow.add(output.first);
             }

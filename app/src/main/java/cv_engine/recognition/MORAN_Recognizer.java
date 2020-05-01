@@ -40,10 +40,13 @@ public class MORAN_Recognizer extends TextRecognizerTorch {
         return (int) (inputSize.getHeight()/ (float) imageHeight) * imageWidth;
     }
 
-    public Tensor preprocess(Bitmap bitmap) {
-        int width = getVariableWidth(bitmap.getWidth(), bitmap.getHeight());
-        bitmap = Bitmap.createScaledBitmap(bitmap, width, inputSize.getHeight(),false);
-        bitmap = bitmapToGrayscale(bitmap);
+    Tensor preprocess(Bitmap bitmap, boolean convertToGrayScale) {
+        if (bitmap.getHeight() != inputSize.getHeight()) {
+            int width = getVariableWidth(bitmap.getWidth(), bitmap.getHeight());
+            bitmap = Bitmap.createScaledBitmap(bitmap, width, inputSize.getHeight(),false);
+        }
+        if (convertToGrayScale)
+            bitmap = bitmapToGrayscale(bitmap);
         return TensorImageCustomUtils.bitmapGrayscaleToFloat32Tensor(bitmap, this.mean, this.std);
     }
 
@@ -67,9 +70,9 @@ public class MORAN_Recognizer extends TextRecognizerTorch {
         return new Pair<String, Float>(output.toString(), confidence);
     }
 
-    public Pair<String, Float> predict(Bitmap bitmap) {
+    public Pair<String, Float> predict(Bitmap bitmap, boolean convertToGrayScale) {
 
-        Tensor tensor = preprocess(bitmap);
+        Tensor tensor = preprocess(bitmap, convertToGrayScale);
 
         // int maxLength = 20; // Default, for width=100
         int maxLength = (int) (0.2 * getVariableWidth(bitmap.getWidth(), bitmap.getHeight()));
